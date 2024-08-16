@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guinness</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-image: url('images/logo.png'); /* Path to your image */
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            filter: blur(0.5px); /* Blur the background image */
+        }
+
+        /* Container for the form to remove blur effect */
+        .form-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            width: 400px;
+            padding: 20px;
+            border: 1px solid black; /* Border around the form */
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2); /* Border light */
+            border-radius: 10px;
+            z-index: 2; /* Ensure the form is above the blurred background */
+            background-color: white;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+
+        input[type="text"],
+        input[type="tel"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #808080;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.3s ease; /* Smooth transition */
+        }
+
+        button:hover,
+        button:focus {
+            background-color: black;
+            outline: none; /* Remove default outline on focus */
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 3; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgba(0, 0, 0, 0.5); /* Black w/ opacity */
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            text-align: center;
+            border-radius: 10px;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .modal-content img {
+            max-width: 200px;
+            margin: 20px 0;
+        }
+
+        /* Media Queries for Mobile Devices */
+        @media (max-width: 600px) {
+            .form-container {
+                width: 90%;
+                padding: 15px;
+                border-width: 1px;
+            }
+
+            body {
+                padding: 10px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+             /* Override default button color to black on mobile */
+    button {
+        background-color: black;
+    }
+
+    /* Override hover effect on mobile */
+    button:hover,
+    button:focus {
+        background-color: black;
+    }
+
+        }
+
+        /* Media Queries for Tablets */
+        @media (min-width: 601px) and (max-width: 1024px) {
+            .form-container {
+                width: 80%;
+                padding: 20px;
+                border-width: 1.5px;
+            }
+
+            h1 {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h1>GIFT FORM</h1>
+        <form id="gift-form">
+            <input type="text" placeholder="Enter your Name" required>
+            <input type="tel" placeholder="Enter your Phone Number" maxlength="11" required>
+            <input type="text" placeholder="Enter your Address" required>
+            <button type="submit">Submit</button>
+        </form>
+    </div>
+
+    <!-- Modal for Gift Message -->
+    <div id="giftModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Congratulations!</h2>
+            <img id="gift-image" src="images/" alt="Gift Image">
+            <p id="gift-name"></p>
+        </div>
+    </div>
+
+    <script>
+        const gifts = [
+            { name: "1 plate of Asun", image: "images/asun.png" },
+            { name: "Face Towel", image: "images/face.png" },
+            { name: "Gym Towel", image: "images/gym.png" },
+            { name: "Umbrella", image: "images/umbrella.jpg" },
+            { name: "1K Fuel Voucher", image: "images/voucher.png" },
+            { name: "Pen", image: "images/pen.png" },
+            { name: "Water Bottle", image: "images/bottle.jpg" }
+        ];
+
+        const resetTime = "00:00:00"; // Time to reset (24-hour format)
+
+        // Function to reset gifts at midnight
+        function checkResetTime() {
+            const now = new Date();
+            const currentTime = now.toTimeString().split(" ")[0]; // Get current time in HH:MM:SS format
+            const lastResetDate = localStorage.getItem("lastResetDate");
+
+            // Check if it's a new day or if the gifts need to be reset
+            if (!lastResetDate || lastResetDate !== now.toDateString()) {
+                if (currentTime >= resetTime) {
+                    resetGifts();
+                    localStorage.setItem("lastResetDate", now.toDateString());
+                }
+            }
+        }
+
+        // Function to reset the available gifts
+        function resetGifts() {
+            localStorage.setItem("availableGifts", JSON.stringify(gifts));
+            console.log("Gifts have been reset!");
+        }
+
+        // Initialize available gifts
+        let availableGifts = JSON.parse(localStorage.getItem("availableGifts")) || [...gifts];
+        checkResetTime(); // Check if it's time to reset gifts on page load
+
+        // Function to clear form fields
+        function clearForm() {
+            const form = document.getElementById('gift-form');
+            form.reset();
+        }
+
+        // Event listener for form submission
+        document.getElementById('gift-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            if (availableGifts.length > 0) {
+                const randomIndex = Math.floor(Math.random() * availableGifts.length);
+                const selectedGift = availableGifts.splice(randomIndex, 1)[0];
+
+                console.log("Selected gift image URL:", selectedGift.image);
+
+                document.getElementById('gift-image').src = selectedGift.image;
+                document.getElementById('gift-name').textContent = selectedGift.name;
+
+                // Display the modal
+                const modal = document.getElementById('giftModal');
+                modal.style.display = 'flex';
+
+                // Save the updated available gifts list in localStorage
+                localStorage.setItem("availableGifts", JSON.stringify(availableGifts));
+            } else {
+                alert('All gifts have been shown!');
+            }
+        });
+
+        // Close the modal and clear the form when the user clicks the close button
+        document.querySelector('.close').addEventListener('click', function() {
+            document.getElementById('giftModal').style.display = 'none';
+            clearForm();
+        });
+
+        // Close the modal and clear the form when the user clicks outside the modal content
+        window.addEventListener('click', function(event) {
+            const modal = document.getElementById('giftModal');
+            if (event.target == modal) {
+                modal.style.display = 'none';
+                clearForm();
+            }
+        });
+
+        // Set an interval to check the reset time every minute
+        setInterval(checkResetTime, 60000);
+    </script>
+</body>
+</html>
